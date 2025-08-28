@@ -1,0 +1,7 @@
+.history/
+.cache/
+.DS_Store
+tags
+*.swp
+*.swo
+*.bak

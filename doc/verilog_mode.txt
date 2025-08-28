@@ -1,0 +1,83 @@
+*verilog-mode.txt*       User manual for vim-verilog-mode
+
+==============================================================================
+CONTENTS                                               *verilog-mode*
+
+1. Introduction         |verilog-mode-introduction|
+2. Usage                |verilog-mode-usage|
+3. Commands             |verilog-mode-commands|
+4. Options              |verilog-mode-options|
+
+==============================================================================
+1. INTRODUCTION                                *verilog-mode-introduction*
+
+`vim-verilog-mode` is a Vim plugin that integrates the powerful `AUTO`
+expansion features of Emacs' verilog-mode. It works by calling an Emacs
+process in the background to analyze the current buffer and update the `AUTO`
+blocks, allowing you to stay within Vim for all your Verilog editing needs.
+
+The plugin supports both asynchronous (non-blocking) execution on modern Vim
+and Neovim, and a synchronous (blocking) fallback for older Vim 7 versions.
+
+==============================================================================
+2. USAGE                                               *verilog-mode-usage*
+
+The plugin's key mappings are only active in buffers with the 'verilog'
+filetype.
+
+`ta`
+    In Normal mode, adds or updates all `/* AUTO */` blocks in the current
+    file by calling Emacs' `verilog-batch-auto` function.
+
+`td`
+    In Normal mode, deletes all `/* AUTO */` blocks in the current file by
+    calling Emacs' `verilog-batch-delete-auto` function.
+
+==============================================================================
+3. COMMANDS                                            *verilog-mode-commands*
+
+The plugin provides two buffer-local commands as alternatives to the key
+mappings.
+
+*:VerilogAutoAdd*
+    Adds or updates all `AUTO` blocks. Equivalent to the `ta` mapping.
+
+*:VerilogAutoDelete*
+    Deletes all `AUTO` blocks. Equivalent to the `td` mapping.
+
+==============================================================================
+4. OPTIONS                                             *verilog-mode-options*
+
+The following global variables can be set in your .vimrc to customize the
+plugin's behavior.
+
+*'g:verilog_mode_map_auto_add'*
+    Sets the key mapping for adding/updating `AUTO` blocks.
+    Default: "ta"
+    Example: >
+        let g:verilog_mode_map_auto_add = '<Leader>va'
+
+*'g:verilog_mode_map_auto_delete'*
+    Sets the key mapping for deleting `AUTO` blocks.
+    Default: "td"
+    Example: >
+        let g:verilog_mode_map_auto_delete = '<Leader>vd'
+
+*'g:verilog_mode_emacs_executable'*
+    Specifies the full path to the Emacs executable. Use this if `emacs` is
+    not in your system's PATH.
+    Default: "emacs"
+    Example: >
+        let g:verilog_mode_emacs_executable = '/opt/emacs/bin/emacs'
+
+*'g:verilog_mode_force_sync'*
+    If set to `1`, the plugin will always use the synchronous (blocking)
+    execution mode, even on Vim versions that support asynchronous jobs. This
+    serves as a safety switch for environments where the async implementation
+    is unstable.
+    Default: 0
+    Example: >
+        let g:verilog_mode_force_sync = 1
+
+==============================================================================
+ vim:tw=78:ts=8:ft=help:
