@@ -25,17 +25,17 @@ Install using your favorite plugin manager.
 
 **vim-plug**
 ```vim
-Plug 'your-github-username/vim-verilog-mode'
+Plug 'Wenutu/vim-verilog-mode'
 ```
 
 **Vundle**
 ```vim
-Plugin 'your-github-username/vim-verilog-mode'
+Plugin 'Wenutu/vim-verilog-mode'
 ```
 
 **Pathogen**
 ```bash
-git clone https://github.com/your-github-username/vim-verilog-mode.git ~/.vim/bundle/vim-verilog-mode
+git clone https://github.com/Wenutu/vim-verilog-mode.git ~/.vim/bundle/vim-verilog-mode
 ```
 
 **Manual Installation**

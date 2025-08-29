@@ -41,11 +41,10 @@ function! verilog_mode#invoke_emacs(action) abort
         \ g:verilog_mode_emacs_executable,
         \ '-batch',
         \ '-q',
-        \ '-script',
-        \ g:verilog_mode_elisp_script_path,
+        \ '-script', expand('~/.emacs'),
+        \ '-l', g:verilog_mode_elisp_script_path,
         \ tmp_file,
-        \ '-f',
-        \ emacs_function
+        \ '-f', emacs_function
         \ ]
 
   " --- Execution Mode Switch ---
