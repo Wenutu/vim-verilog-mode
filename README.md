@@ -75,7 +75,14 @@ Specify a custom path for the Emacs executable if it's not in your system `PATH`
 " Example:
 let g:verilog_mode_emacs_executable = '/usr/local/bin/emacs'
 ```
+#### Emacs verilog-mode Elisp Path
 
+Specifies the full path to the Emacs Lisp script for Verilog mode.
+
+```vim
+" Emample:
+let g:verilog_mode_elisp_script_path = '/opt/emacs/share/emacs/site-lisp/verilog-mode.el.gz'
+```
 #### Force Synchronous Mode (Troubleshooting)
 
 If you experience issues with the asynchronous execution (e.g., empty errors, freezes) on your specific Vim version, you can force the plugin to use the stable, blocking mode.
