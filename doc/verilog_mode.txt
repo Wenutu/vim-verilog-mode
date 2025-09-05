@@ -70,6 +70,14 @@ plugin's behavior.
     Example: >
         let g:verilog_mode_emacs_executable = '/opt/emacs/bin/emacs'
 
+*'g:verilog_mode_elisp_script_path'*
+    Specifies the full path to the Emacs Lisp script for Verilog mode.
+    Default: "tools/verilog-mode.el.gz" within the plugin directory.
+    If you have a custom installation of verilog-mode.el, set this variable
+    to point to that file.
+    Example: >
+        let g:verilog_mode_elisp_script_path = '/opt/emacs/share/emacs/site-lisp/verilog-mode.el.gz'
+
 *'g:verilog_mode_force_sync'*
     If set to `1`, the plugin will always use the synchronous (blocking)
     execution mode, even on Vim versions that support asynchronous jobs. This

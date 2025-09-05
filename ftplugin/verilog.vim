@@ -28,11 +28,15 @@ endif
 
 if !exists('g:verilog_mode_elisp_script_path')
   let s:plugin_root = fnamemodify(expand('<sfile>'), ':h:h')
-  let s:elisp_script = s:plugin_root . '/tools/verilog-mode.el'
+  let s:elisp_script = s:plugin_root . '/tools/verilog-mode.el.gz'
   if filereadable(s:elisp_script)
     let g:verilog_mode_elisp_script_path = s:elisp_script
   else
-    echoerr '[Verilog-Mode] Critical error: could not find verilog-mode.el'
+    echoerr '[Verilog-Mode] Critical error: could not find verilog-mode.el.gz'
+  endif
+else
+  if !filereadable(g:verilog_mode_elisp_script_path)
+    echoerr '[Verilog-Mode] Critical error: g:verilog_mode_elisp_script_path is set but the file is not readable'
   endif
 endif
 
