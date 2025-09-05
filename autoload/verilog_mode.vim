@@ -12,6 +12,16 @@ function! s:SID()
   return matchstr(expand('<sfile>'), '<SNR>\d\+_')
 endfunction
 
+" This function centralizes the logic for updating the buffer content.
+function! s:update_buffer_content(content) abort
+  let save_cursor = getpos('.')
+  silent! %d _
+  call setline(1, a:content)
+  call setpos('.', save_cursor)
+  silent! write
+  echom '[Verilog-Mode] Buffer updated and saved.'
+endfunction
+
 " --- Public Functions ---
 function! verilog_mode#invoke_emacs(action) abort
   if !empty(s:job_info) && g:verilog_mode_force_sync == 0
@@ -42,10 +52,17 @@ function! verilog_mode#invoke_emacs(action) abort
         \ '-batch',
         \ '-q',
         \ '-script', expand('~/.emacs'),
-        \ '-l', g:verilog_mode_elisp_script_path,
-        \ tmp_file,
-        \ '-f', emacs_function
+        \ '-l', g:verilog_mode_elisp_script_path
         \ ]
+  
+  if exists('g:verilog_mode_extra_elisp_scripts') && type(g:verilog_mode_extra_elisp_scripts) == type([]) && !empty(g:verilog_mode_extra_elisp_scripts)
+    for s:script in g:verilog_mode_extra_elisp_scripts
+      let cmd += ['-l', expand(s:script)]
+    endfor
+  endif
+  
+  " Add the target file and function to the end of the command list
+  let cmd += [tmp_file, '-f', emacs_function]
 
   " --- Execution Mode Switch ---
   if (has('nvim') || has('job')) && !g:verilog_mode_force_sync
@@ -70,8 +87,6 @@ function! s:run_async(cmd, tmp_file) abort
         \ }
   let job_id = job_start(a:cmd, job_options)
 
-  " CORRECTED: Use only job_status() for failure check. This is the most
-  " compatible method and avoids type errors with the job_id variable.
   if job_status(job_id) == 'fail'
     echoerr '[Verilog-Mode] Failed to start async job.'
     let s:job_info = {}
@@ -93,13 +108,8 @@ function! s:run_sync(cmd, tmp_file) abort
     return
   endif
   let new_content = readfile(a:tmp_file)
-  let save_cursor = getpos('.')
-  silent! %d _
-  call setline(1, new_content)
-  call setpos('.', save_cursor)
   call delete(a:tmp_file)
-  silent! write
-  echom '[Verilog-Mode] Buffer updated and saved.'
+  call s:update_buffer_content(new_content)
 endfunction
 
 " --- Timer Callback for UI Update ---
@@ -118,13 +128,7 @@ function! s:apply_pending_update(timer_id) abort
   else
     execute 'vsplit | buffer ' . bnr
   endif
-
-  let save_cursor = getpos('.')
-  silent! %d _
-  call setline(1, new_content)
-  call setpos('.', save_cursor)
-  silent! write
-  echom '[Verilog-Mode] Buffer updated and saved.'
+  call s:update_buffer_content(new_content)
 endfunction
 
 " --- Async Callbacks ---

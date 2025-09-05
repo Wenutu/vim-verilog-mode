@@ -78,6 +78,16 @@ plugin's behavior.
     Example: >
         let g:verilog_mode_elisp_script_path = '/opt/emacs/share/emacs/site-lisp/verilog-mode.el.gz'
 
+*'g:verilog_mode_extra_elisp_scripts'*                 *g:verilog_mode_extra_elisp_scripts*
+    A list of strings, where each string is a path to an additional Emacs
+    Lisp script to load. This is useful for loading custom configurations
+    (e.g., indentation settings) that `verilog-mode` should respect.
+    These scripts are loaded after your `~/.emacs` and the main
+    `verilog-mode.el` script.
+    Default: [] (an empty list)
+    Example: >
+        let g:verilog_mode_extra_elisp_scripts = ['~/.config/emacs/verilog-custom.el']
+
 *'g:verilog_mode_force_sync'*
     If set to `1`, the plugin will always use the synchronous (blocking)
     execution mode, even on Vim versions that support asynchronous jobs. This

@@ -21,10 +21,23 @@ if !exists('g:verilog_mode_emacs_executable')
   let g:verilog_mode_emacs_executable = 'emacs'
 endif
 
-" Add the force_sync option here as well for maximum robustness.
 if !exists('g:verilog_mode_force_sync')
   let g:verilog_mode_force_sync = 0
 endif
+
+if !exists('g:verilog_mode_extra_elisp_scripts')
+  let g:verilog_mode_extra_elisp_scripts = []
+elseif type(g:verilog_mode_extra_elisp_scripts) != type([])
+  echoerr '[Verilog-Mode] g:verilog_mode_extra_elisp_scripts must be a List.'
+  let g:verilog_mode_extra_elisp_scripts = [] " Reset to default to prevent errors
+else
+  for s:script in g:verilog_mode_extra_elisp_scripts
+    if !filereadable(expand(s:script))
+      echoerr '[Verilog-Mode] Extra elisp script is not readable: ' . s:script
+    endif
+  endfor
+endif
+" --- End of NEW section ---
 
 if !exists('g:verilog_mode_elisp_script_path')
   let s:plugin_root = fnamemodify(expand('<sfile>'), ':h:h')

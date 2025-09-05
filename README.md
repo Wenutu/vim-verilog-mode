@@ -83,6 +83,14 @@ Specifies the full path to the Emacs Lisp script for Verilog mode.
 " Emample:
 let g:verilog_mode_elisp_script_path = '/opt/emacs/share/emacs/site-lisp/verilog-mode.el.gz'
 ```
+
+### Emacs verilog-mode Extra Elisp Path
+A list of strings, where each string is a path to an additional Emacs Lisp script to load.
+```vim
+" Emample:
+let g:verilog_mode_extra_elisp_scripts = ['~/.config/emacs/verilog-custom.el']
+```
+
 #### Force Synchronous Mode (Troubleshooting)
 
 If you experience issues with the asynchronous execution (e.g., empty errors, freezes) on your specific Vim version, you can force the plugin to use the stable, blocking mode.
