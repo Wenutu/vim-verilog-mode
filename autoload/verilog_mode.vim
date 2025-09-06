@@ -68,7 +68,7 @@ function! verilog_mode#invoke_emacs(action, ...) abort
   
   let cmd += [tmp_file, '-f', emacs_function]
 
-  echom '[Verilog-Mode] Invoking Emacs with command: ' . join(cmd, ' ')
+  " echom '[Verilog-Mode] Invoking Emacs with command: ' . join(cmd, ' ')
 
   if (has('nvim') || has('job')) && !g:verilog_mode_force_sync
     call s:run_async(cmd, tmp_file)

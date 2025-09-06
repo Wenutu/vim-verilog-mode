@@ -10,5 +10,3 @@ if exists("b:did_ftplugin")
 endif
 
 au BufNewFile,BufRead *.v,*.vh,*.sv,*.svh  setfiletype verilog
-
-runtime! ftplugin/verilog.vim
