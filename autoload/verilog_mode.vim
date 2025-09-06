@@ -12,7 +12,6 @@ function! s:SID()
   return matchstr(expand('<sfile>'), '<SNR>\d\+_')
 endfunction
 
-" This function centralizes the logic for updating the buffer content.
 function! s:update_buffer_content(content) abort
   let save_cursor = getpos('.')
   silent! %d _
@@ -23,7 +22,10 @@ function! s:update_buffer_content(content) abort
 endfunction
 
 " --- Public Functions ---
-function! verilog_mode#invoke_emacs(action) abort
+function! verilog_mode#invoke_emacs(action, ...) abort
+  " a:1 controls whether to load extra scripts. Default to 0 (false).
+  let load_extra_scripts = a:0 > 0 ? a:1 : 0
+
   if !empty(s:job_info) && g:verilog_mode_force_sync == 0
     echoerr '[Verilog-Mode] An Emacs process is already running. Please wait.'
     return
@@ -55,16 +57,19 @@ function! verilog_mode#invoke_emacs(action) abort
         \ '-l', g:verilog_mode_elisp_script_path
         \ ]
   
-  if exists('g:verilog_mode_extra_elisp_scripts') && type(g:verilog_mode_extra_elisp_scripts) == type([]) && !empty(g:verilog_mode_extra_elisp_scripts)
-    for s:script in g:verilog_mode_extra_elisp_scripts
-      let cmd += ['-l', expand(s:script)]
-    endfor
+  if load_extra_scripts
+    echom '[Verilog-Mode] Loading extra Elisp scripts...'
+    if exists('g:verilog_mode_extra_elisp_scripts') && type(g:verilog_mode_extra_elisp_scripts) == type([])
+      for s:script in g:verilog_mode_extra_elisp_scripts
+        let cmd += ['-l', expand(s:script)]
+      endfor
+    endif
   endif
   
-  " Add the target file and function to the end of the command list
   let cmd += [tmp_file, '-f', emacs_function]
 
-  " --- Execution Mode Switch ---
+  echom '[Verilog-Mode] Invoking Emacs with command: ' . join(cmd, ' ')
+
   if (has('nvim') || has('job')) && !g:verilog_mode_force_sync
     call s:run_async(cmd, tmp_file)
   else
@@ -115,13 +120,10 @@ endfunction
 " --- Timer Callback for UI Update ---
 function! s:apply_pending_update(timer_id) abort
   if empty(s:pending_update) | return | endif
-
   let bnr = s:pending_update.bufnr
   let new_content = s:pending_update.content
   let s:pending_update = {}
-
   if !bufexists(bnr) || !buflisted(bnr) | return | endif
-
   let win_id = bufwinid(bnr)
   if win_id > 0
     call win_gotoid(win_id)
@@ -131,14 +133,13 @@ function! s:apply_pending_update(timer_id) abort
   call s:update_buffer_content(new_content)
 endfunction
 
-" --- Async Callbacks ---
+" --- Async Callbacks (unchanged) ---
 function! s:on_exit(job_id, status) abort
   if empty(s:job_info) | return | endif
   let bnr = s:job_info.bufnr
   let tmp_file = s:job_info.tmp_file
   let start_time = s:job_info.start_time
   let s:job_info = {}
-  
   let elapsed = reltimestr(reltime(start_time))
   echom printf('[Verilog-Mode] Async Emacs process finished with status %d in %s.', a:status, elapsed)
   if a:status != 0
@@ -148,14 +149,11 @@ function! s:on_exit(job_id, status) abort
     call delete(tmp_file)
     return
   endif
-
   let new_content = readfile(tmp_file)
   call delete(tmp_file)
-
   let s:pending_update = {'bufnr': bnr, 'content': new_content}
   call timer_start(0, s:SID() . 'apply_pending_update')
 endfunction
-
 function! s:on_err(job_id, msglist) abort
   for msg in a:msglist
     if !empty(msg)
@@ -165,7 +163,5 @@ function! s:on_err(job_id, msglist) abort
     endif
   endfor
 endfunction
-
 function! s:on_out(job_id, msglist) abort
-  " No action needed for stdout.
 endfunction

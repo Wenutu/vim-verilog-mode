@@ -25,77 +25,74 @@ and Neovim, and a synchronous (blocking) fallback for older Vim 7 versions.
 The plugin's key mappings are only active in buffers with the 'verilog'
 filetype.
 
-`ta`
-    In Normal mode, adds or updates all `/* AUTO */` blocks in the current
-    file by calling Emacs' `verilog-batch-auto` function.
+`ta` (Default Mode)
+    Adds or updates all `/* AUTO */` blocks in the current file. This mode
+    only loads your `~/.emacs` and the core `verilog-mode.el` script.
 
-`td`
-    In Normal mode, deletes all `/* AUTO */` blocks in the current file by
-    calling Emacs' `verilog-batch-delete-auto` function.
+`td` (Default Mode)
+    Deletes all `/* AUTO */` blocks in the current file using the default mode.
+
+`tA` (Extra Mode)
+    Adds or updates all `/* AUTO */` blocks, and additionally loads your
+    custom elisp files defined in `g:verilog_mode_extra_elisp_scripts`.
+
+`tD` (Extra Mode)
+    Deletes all `/* AUTO */` blocks using the extra mode.
 
 ==============================================================================
 3. COMMANDS                                            *verilog-mode-commands*
 
-The plugin provides two buffer-local commands as alternatives to the key
-mappings.
-
 *:VerilogAutoAdd*
-    Adds or updates all `AUTO` blocks. Equivalent to the `ta` mapping.
+    Default mode: Adds or updates all `AUTO` blocks. Equivalent to `ta`.
 
 *:VerilogAutoDelete*
-    Deletes all `AUTO` blocks. Equivalent to the `td` mapping.
+    Default mode: Deletes all `AUTO` blocks. Equivalent to `td`.
+
+*:VerilogAutoAddExtra*
+    Extra mode: Adds or updates `AUTO` blocks, loading extra elisp files.
+    Equivalent to `tA`.
+
+*:VerilogAutoDeleteExtra*
+    Extra mode: Deletes all `AUTO` blocks, loading extra elisp files.
+    Equivalent to `tD`.
 
 ==============================================================================
 4. OPTIONS                                             *verilog-mode-options*
 
-The following global variables can be set in your .vimrc to customize the
-plugin's behavior.
-
 *'g:verilog_mode_map_auto_add'*
-    Sets the key mapping for adding/updating `AUTO` blocks.
+    Sets the key mapping for adding/updating `AUTO` blocks (default mode).
     Default: "ta"
-    Example: >
-        let g:verilog_mode_map_auto_add = '<Leader>va'
 
 *'g:verilog_mode_map_auto_delete'*
-    Sets the key mapping for deleting `AUTO` blocks.
+    Sets the key mapping for deleting `AUTO` blocks (default mode).
     Default: "td"
-    Example: >
-        let g:verilog_mode_map_auto_delete = '<Leader>vd'
+
+*'g:verilog_mode_map_auto_add_extra'*
+    Sets the key mapping for adding/updating `AUTO` blocks (extra mode).
+    Default: "tA"
+
+*'g:verilog_mode_map_auto_delete_extra'*
+    Sets the key mapping for deleting `AUTO` blocks (extra mode).
+    Default: "tD"
 
 *'g:verilog_mode_emacs_executable'*
-    Specifies the full path to the Emacs executable. Use this if `emacs` is
-    not in your system's PATH.
+    Specifies the full path to the Emacs executable.
     Default: "emacs"
-    Example: >
-        let g:verilog_mode_emacs_executable = '/opt/emacs/bin/emacs'
 
 *'g:verilog_mode_elisp_script_path'*
     Specifies the full path to the Emacs Lisp script for Verilog mode.
     Default: "tools/verilog-mode.el.gz" within the plugin directory.
-    If you have a custom installation of verilog-mode.el, set this variable
-    to point to that file.
-    Example: >
-        let g:verilog_mode_elisp_script_path = '/opt/emacs/share/emacs/site-lisp/verilog-mode.el.gz'
 
-*'g:verilog_mode_extra_elisp_scripts'*                 *g:verilog_mode_extra_elisp_scripts*
+*'g:verilog_mode_extra_elisp_scripts'*
     A list of strings, where each string is a path to an additional Emacs
-    Lisp script to load. This is useful for loading custom configurations
-    (e.g., indentation settings) that `verilog-mode` should respect.
-    These scripts are loaded after your `~/.emacs` and the main
-    `verilog-mode.el` script.
-    Default: [] (an empty list)
-    Example: >
-        let g:verilog_mode_extra_elisp_scripts = ['~/.config/emacs/verilog-custom.el']
+    Lisp script to load. These are *only* loaded when using the "extra" mode
+    mappings (`tA`, `tD`) or commands (`:VerilogAutoAddExtra`).
+    Default: []
 
 *'g:verilog_mode_force_sync'*
     If set to `1`, the plugin will always use the synchronous (blocking)
-    execution mode, even on Vim versions that support asynchronous jobs. This
-    serves as a safety switch for environments where the async implementation
-    is unstable.
+    execution mode.
     Default: 0
-    Example: >
-        let g:verilog_mode_force_sync = 1
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:
