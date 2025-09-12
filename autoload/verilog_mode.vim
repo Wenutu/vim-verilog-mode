@@ -87,7 +87,7 @@ function! s:run_async(cmd, tmp_file) abort
         \ }
   let job_options = {
         \ 'exit_cb': s:SID() . 'on_exit',
-        \ 'err_cb':  s:SID() . 'on_err',
+        \ 'err_cb':  s:SID() . 'on_out',
         \ 'out_cb':  s:SID() . 'on_out',
         \ }
   let job_id = job_start(a:cmd, job_options)
