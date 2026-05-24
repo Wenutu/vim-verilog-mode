@@ -12,7 +12,7 @@ function! s:SID()
   return matchstr(expand('<sfile>'), '<SNR>\d\+_')
 endfunction
 
-function! s:update_buffer_content(content) abort
+function! s:update_buffer_content(content)
   let save_cursor = getpos('.')
   silent! %d _
   call setline(1, a:content)
@@ -22,7 +22,51 @@ function! s:update_buffer_content(content) abort
 endfunction
 
 " --- Public Functions ---
-function! verilog_mode#invoke_emacs(action, ...) abort
+function! s:shell_join(argv)
+  let l:parts = []
+  for l:item in a:argv
+    call add(l:parts, shellescape(l:item))
+  endfor
+  return join(l:parts, ' ')
+endfunction
+
+function! s:echo_failure(summary, details)
+  echohl ErrorMsg
+  echomsg a:summary
+  echohl None
+
+  if empty(a:details)
+    echomsg '[Verilog-Mode] No output was captured from Emacs.'
+    return
+  endif
+
+  echomsg '[Verilog-Mode] Emacs output:'
+  let l:lines = type(a:details) == type([]) ? a:details : split(a:details, "\n")
+  let l:max_lines = 80
+  for l:line in l:lines[:l:max_lines - 1]
+    if !empty(l:line)
+      echomsg '[Verilog-Mode] ' . l:line
+    endif
+  endfor
+  if len(l:lines) > l:max_lines
+    echomsg printf('[Verilog-Mode] ... %d more lines omitted', len(l:lines) - l:max_lines)
+  endif
+endfunction
+
+function! s:record_job_output(kind, msg)
+  if empty(s:job_info) || !has_key(s:job_info, 'output')
+    return
+  endif
+
+  let l:messages = type(a:msg) == type([]) ? a:msg : [a:msg]
+  for l:msg in l:messages
+    if !empty(l:msg)
+      call add(s:job_info.output, '[' . a:kind . '] ' . l:msg)
+    endif
+  endfor
+endfunction
+
+function! verilog_mode#invoke_emacs(action, ...)
   " a:1 controls whether to load extra scripts. Default to 0 (false).
   let load_extra_scripts = a:0 > 0 ? a:1 : 0
 
@@ -50,18 +94,23 @@ function! verilog_mode#invoke_emacs(action, ...) abort
   endif
 
   let cmd = [
-        \ g:verilog_mode_emacs_executable,
+        \ expand(g:verilog_mode_emacs_executable),
         \ '-batch',
-        \ '-q',
-        \ '-script', expand('~/.emacs'),
-        \ '-l', g:verilog_mode_elisp_script_path
+        \ '-q'
         \ ]
+
+  let user_emacs_script = expand('~/.emacs')
+  if filereadable(user_emacs_script)
+    let cmd += ['-script', user_emacs_script]
+  endif
+
+  let cmd += ['-l', expand(g:verilog_mode_elisp_script_path)]
   
   if load_extra_scripts
     echom '[Verilog-Mode] Loading extra Elisp scripts...'
     if exists('g:verilog_mode_extra_elisp_scripts') && type(g:verilog_mode_extra_elisp_scripts) == type([])
-      for s:script in g:verilog_mode_extra_elisp_scripts
-        let cmd += ['-l', expand(s:script)]
+      for l:script in g:verilog_mode_extra_elisp_scripts
+        let cmd += ['-l', expand(l:script)]
       endfor
     endif
   endif
@@ -70,7 +119,7 @@ function! verilog_mode#invoke_emacs(action, ...) abort
 
   " echom '[Verilog-Mode] Invoking Emacs with command: ' . join(cmd, ' ')
 
-  if (has('nvim') || has('job')) && !g:verilog_mode_force_sync
+  if has('job') && exists('*job_start') && exists('*job_status') && !g:verilog_mode_force_sync
     call s:run_async(cmd, tmp_file)
   else
     call s:run_sync(cmd, tmp_file)
@@ -78,16 +127,17 @@ function! verilog_mode#invoke_emacs(action, ...) abort
 endfunction
 
 " --- Asynchronous Execution ---
-function! s:run_async(cmd, tmp_file) abort
+function! s:run_async(cmd, tmp_file)
   echom '[Verilog-Mode] Starting Emacs asynchronously...'
   let s:job_info = {
         \ 'bufnr': bufnr('%'),
         \ 'tmp_file': a:tmp_file,
-        \ 'start_time': reltime()
+        \ 'start_time': reltime(),
+        \ 'output': []
         \ }
   let job_options = {
         \ 'exit_cb': s:SID() . 'on_exit',
-        \ 'err_cb':  s:SID() . 'on_out',
+        \ 'err_cb':  s:SID() . 'on_err',
         \ 'out_cb':  s:SID() . 'on_out',
         \ }
   let job_id = job_start(a:cmd, job_options)
@@ -104,11 +154,11 @@ function! s:run_async(cmd, tmp_file) abort
 endfunction
 
 " --- Synchronous Execution (Vim 7 fallback) ---
-function! s:run_sync(cmd, tmp_file) abort
+function! s:run_sync(cmd, tmp_file)
   echom '[Verilog-Mode] Running Emacs synchronously (Vim 7 fallback)...'
-  call system(join(a:cmd))
+  let l:output = system(s:shell_join(a:cmd) . ' 2>&1')
   if v:shell_error
-    echoerr '[Verilog-Mode] Emacs command failed with exit code: ' . v:shell_error
+    call s:echo_failure('[Verilog-Mode] Emacs command failed with exit code: ' . v:shell_error, l:output)
     call delete(a:tmp_file)
     return
   endif
@@ -118,7 +168,7 @@ function! s:run_sync(cmd, tmp_file) abort
 endfunction
 
 " --- Timer Callback for UI Update ---
-function! s:apply_pending_update(timer_id) abort
+function! s:apply_pending_update(timer_id)
   if empty(s:pending_update) | return | endif
   let bnr = s:pending_update.bufnr
   let new_content = s:pending_update.content
@@ -134,34 +184,32 @@ function! s:apply_pending_update(timer_id) abort
 endfunction
 
 " --- Async Callbacks (unchanged) ---
-function! s:on_exit(job_id, status) abort
+function! s:on_exit(job_id, status)
   if empty(s:job_info) | return | endif
   let bnr = s:job_info.bufnr
   let tmp_file = s:job_info.tmp_file
   let start_time = s:job_info.start_time
+  let output = has_key(s:job_info, 'output') ? copy(s:job_info.output) : []
   let s:job_info = {}
   let elapsed = reltimestr(reltime(start_time))
   echom printf('[Verilog-Mode] Async Emacs process finished with status %d in %s.', a:status, elapsed)
   if a:status != 0
-    echohl WarningMsg
-    echomsg '[Verilog-Mode] Emacs exited with a non-zero status. Buffer not modified.'
-    echohl None
+    call s:echo_failure('[Verilog-Mode] Emacs exited with status ' . a:status . '. Buffer not modified.', output)
     call delete(tmp_file)
     return
   endif
   let new_content = readfile(tmp_file)
   call delete(tmp_file)
   let s:pending_update = {'bufnr': bnr, 'content': new_content}
-  call timer_start(0, s:SID() . 'apply_pending_update')
+  if exists('*timer_start')
+    call timer_start(0, s:SID() . 'apply_pending_update')
+  else
+    call s:apply_pending_update(0)
+  endif
 endfunction
-function! s:on_err(job_id, msglist) abort
-  for msg in a:msglist
-    if !empty(msg)
-      echohl WarningMsg
-      echomsg '[Verilog-Mode][Emacs stderr] ' . msg
-      echohl None
-    endif
-  endfor
+function! s:on_err(job_id, msglist)
+  call s:record_job_output('stderr', a:msglist)
 endfunction
-function! s:on_out(job_id, msglist) abort
+function! s:on_out(job_id, msglist)
+  call s:record_job_output('stdout', a:msglist)
 endfunction

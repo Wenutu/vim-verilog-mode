@@ -17,7 +17,7 @@ process in the background to analyze the current buffer and update the `AUTO`
 blocks, allowing you to stay within Vim for all your Verilog editing needs.
 
 The plugin supports both asynchronous (non-blocking) execution on modern Vim
-and Neovim, and a synchronous (blocking) fallback for older Vim 7 versions.
+and a synchronous (blocking) fallback for older Vim 7 versions.
 
 ==============================================================================
 2. USAGE                                               *verilog-mode-usage*

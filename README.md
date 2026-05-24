@@ -2,58 +2,30 @@
 
 Bring the power of Emacs' `verilog-mode` `AUTO` expansion features into Vim.
 
-This plugin provides a seamless integration, allowing you to update Verilog `/* AUTO */` blocks without ever leaving your Vim editor. It works by intelligently calling a background Emacs process to perform the heavy lifting.
-
-![Demo GIF (Placeholder)](https://user-images.githubusercontent.com/username/repo/demo.gif)
-*(You can create a small demo gif and place it here)*
+This plugin provides a seamless integration, allowing you to update Verilog `/* AUTO */` blocks without ever leaving your Vim editor. It works by calling Emacs in batch mode to perform the heavy lifting.
 
 ## Features
 
--   **Asynchronous by Default**: On modern Vim (with `+job`) and Neovim, Emacs runs in the background, so your UI never freezes, even with large files.
--   **Synchronous Fallback**: Fully compatible with older Vim versions (like Vim 7) by automatically switching to a blocking mode.
+-   **On-demand Loading**: Verilog commands and mappings are installed only for buffers with `filetype=verilog`.
+-   **Asynchronous by Default**: On modern Vim (with `+job`), Emacs runs in the background, so your UI stays responsive, even with large files.
+-   **Synchronous Fallback**: Compatible with older Vim versions (like Vim 7) by automatically switching to a blocking mode.
 -   **Simple and Flexible**: Comes with intuitive default key mappings (`ta`, `td`) and Ex commands.
 -   **Highly Configurable**: Easily customize key mappings, Emacs executable path, and even load your own custom Emacs Lisp configuration files for project-specific settings.
 -   **Robust Error Handling**: Provides clear feedback if Emacs fails or if configurations are missing.
 
 ## Installation
 
-Use your favorite plugin manager.
-
-<details>
-<summary><b>vim-plug</b></summary>
+### vim-plug
 
 ```vim
 Plug 'Wenutu/vim-verilog-mode'
 ```
 
-</details>
-
-<details>
-<summary><b>packer.nvim</b></summary>
-
-```lua
-use 'Wenutu/vim-verilog-mode'
-```
-
-</details>
-
-<details>
-<summary><b>dein.vim</b></summary>
+For vim-plug filetype lazy loading:
 
 ```vim
-call dein#add('Wenutu/vim-verilog-mode')
+Plug 'Wenutu/vim-verilog-mode', { 'for': 'verilog' }
 ```
-
-</details>
-
-<details>
-<summary><b>Pathogen</b></summary>
-
-```bash
-git clone https://github.com/Wenutu/vim-verilog-mode.git ~/.vim/bundle/vim-verilog-mode
-```
-
-</details>
 
 ## Prerequisites
 
@@ -87,7 +59,7 @@ This mode is for when you need to load project-specific or custom Emacs Lisp con
 
 ## Configuration
 
-You can customize the plugin by setting the following global variables in your `.vimrc` or `init.vim`.
+You can customize the plugin by setting the following global variables in your `.vimrc`.
 
 ```vim
 " --- Basic Key Mappings ---
@@ -105,13 +77,35 @@ let g:verilog_mode_map_auto_delete_extra = '<Leader>vD'
 
 " Use a custom verilog-mode.el file instead of the bundled one
 " let g:verilog_mode_elisp_script_path = '~/path/to/your/verilog-mode.el'
+```
 
+If `~/.emacs` exists, the plugin will load it with Emacs `-script`. You can use
+it to customize `verilog-mode`, for example to use 4-space indentation:
+
+```elisp
+;; User customization for Verilog mode
+(setq verilog-indent-level             4
+      verilog-indent-level-module      4
+      verilog-indent-level-declaration 4
+      verilog-indent-level-behavioral  4
+      verilog-indent-level-directive   1
+      verilog-case-indent              4
+      verilog-auto-newline             t
+      verilog-auto-indent-on-newline   t
+      verilog-tab-always-indent        t
+      verilog-auto-endcomments         t
+      verilog-minimum-comment-distance 40
+      verilog-indent-begin-after-if    t
+      verilog-auto-lineup              'declarations)
+```
+
+```vim
 " --- Extra Mode Configuration ---
 " A list of extra elisp files to load in "Extra Mode"
 let g:verilog_mode_extra_elisp_scripts = ['~/.config/emacs/my-project-verilog-settings.el']
 
 " --- Advanced ---
-" Force synchronous (blocking) mode even on modern Vim/Neovim
+" Force synchronous (blocking) mode even on modern Vim
 " Useful for debugging or if async behavior is unstable in your environment
 " let g:verilog_mode_force_sync = 1
 ```
@@ -126,7 +120,7 @@ For more details, see the built-in documentation with `:help verilog-mode`.
 4.  The plugin reads the modified content from the temporary file and updates the Vim buffer.
 5.  The temporary file is deleted.
 
-The asynchronous job control in Vim/Neovim ensures that steps 2-4 happen in the background without interrupting your workflow.
+The asynchronous job control in modern Vim ensures that steps 2-4 happen in the background without interrupting your workflow.
 
 ## License
 

@@ -4,9 +4,7 @@
 " Description: Filetype-specific settings for Verilog.
 " =============================================================================
 
-" Only do this when not done yet for this buffer
-if exists("b:did_ftplugin")
-  finish
-endif
-
-au BufNewFile,BufRead *.v,*.vh,*.sv,*.svh  set filetype=verilog
+augroup verilog_mode_filetype
+  autocmd!
+  autocmd BufNewFile,BufRead *.v,*.vh setfiletype verilog
+augroup END
