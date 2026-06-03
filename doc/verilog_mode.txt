@@ -19,11 +19,23 @@ blocks, allowing you to stay within Vim for all your Verilog editing needs.
 The plugin supports both asynchronous (non-blocking) execution on modern Vim
 and a synchronous (blocking) fallback for older Vim 7 versions.
 
+Verilog and SystemVerilog buffers also get bundled syntax highlighting and
+fast indentation support. The ftplugin does not override your tab or
+indentation options.
+
 ==============================================================================
 2. USAGE                                               *verilog-mode-usage*
 
-The plugin's key mappings are only active in buffers with the 'verilog'
-filetype.
+The plugin's key mappings are only active in buffers with the 'verilog' or
+'systemverilog' filetype.
+
+Indentation is enabled through the bundled indent scripts when
+`:filetype plugin indent on` is active. The scripts use 'shiftwidth', so
+spacing follows your buffer-local Vim settings. For 4-space, no-tab editing,
+configure this in your vimrc:
+>
+    autocmd FileType verilog,systemverilog setlocal expandtab tabstop=4 shiftwidth=4 softtabstop=4
+<
 
 `ta` (Default Mode)
     Adds or updates all `/* AUTO */` blocks in the current file. This mode

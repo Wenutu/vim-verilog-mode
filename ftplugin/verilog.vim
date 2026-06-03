@@ -7,6 +7,7 @@ if exists('b:did_ftplugin_verilog_mode')
   finish
 endif
 let b:did_ftplugin_verilog_mode = 1
+let b:undo_ftplugin = ''
 
 " --- Defensive Global Variable Initialization ---
 " MODIFIED: Default mappings for simple/default mode
@@ -71,17 +72,21 @@ nnoremap <silent> <buffer> <Plug>VerilogModeDeleteExtra :call verilog_mode#invok
 " Map user-defined keys to default actions
 if !hasmapto('<Plug>VerilogModeAdd', 'n')
   execute 'nnoremap <silent> <buffer> ' . g:verilog_mode_map_auto_add . ' <Plug>VerilogModeAdd'
+  let b:undo_ftplugin .= ' | silent! nunmap <buffer> ' . g:verilog_mode_map_auto_add
 endif
 if !hasmapto('<Plug>VerilogModeDelete', 'n')
   execute 'nnoremap <silent> <buffer> ' . g:verilog_mode_map_auto_delete . ' <Plug>VerilogModeDelete'
+  let b:undo_ftplugin .= ' | silent! nunmap <buffer> ' . g:verilog_mode_map_auto_delete
 endif
 
 " Map user-defined keys to extra actions
 if !hasmapto('<Plug>VerilogModeAddExtra', 'n')
   execute 'nnoremap <silent> <buffer> ' . g:verilog_mode_map_auto_add_extra . ' <Plug>VerilogModeAddExtra'
+  let b:undo_ftplugin .= ' | silent! nunmap <buffer> ' . g:verilog_mode_map_auto_add_extra
 endif
 if !hasmapto('<Plug>VerilogModeDeleteExtra', 'n')
   execute 'nnoremap <silent> <buffer> ' . g:verilog_mode_map_auto_delete_extra . ' <Plug>VerilogModeDeleteExtra'
+  let b:undo_ftplugin .= ' | silent! nunmap <buffer> ' . g:verilog_mode_map_auto_delete_extra
 endif
 
 " --- Commands ---
@@ -92,6 +97,15 @@ command! -buffer VerilogAutoDelete call verilog_mode#invoke_emacs('delete', 0)
 " Extra commands
 command! -buffer VerilogAutoAddExtra   call verilog_mode#invoke_emacs('auto', 1)
 command! -buffer VerilogAutoDeleteExtra call verilog_mode#invoke_emacs('delete', 1)
+
+let b:undo_ftplugin .= ' | silent! nunmap <buffer> <Plug>VerilogModeAdd'
+let b:undo_ftplugin .= ' | silent! nunmap <buffer> <Plug>VerilogModeDelete'
+let b:undo_ftplugin .= ' | silent! nunmap <buffer> <Plug>VerilogModeAddExtra'
+let b:undo_ftplugin .= ' | silent! nunmap <buffer> <Plug>VerilogModeDeleteExtra'
+let b:undo_ftplugin .= ' | silent! delcommand -buffer VerilogAutoAdd'
+let b:undo_ftplugin .= ' | silent! delcommand -buffer VerilogAutoDelete'
+let b:undo_ftplugin .= ' | silent! delcommand -buffer VerilogAutoAddExtra'
+let b:undo_ftplugin .= ' | silent! delcommand -buffer VerilogAutoDeleteExtra'
 
 " --- GUI Menu Setup ---
 if has('gui_running')

@@ -6,5 +6,6 @@
 
 augroup verilog_mode_filetype
   autocmd!
-  autocmd BufNewFile,BufRead *.v,*.vh setfiletype verilog
+  autocmd BufNewFile,BufRead *.v,*.vh setlocal filetype=verilog
+  autocmd BufNewFile,BufRead *.sv,*.svh,*.svp,*.svi setlocal filetype=systemverilog
 augroup END

@@ -5,3 +5,5 @@ tags
 *.swp
 *.swo
 *.bak
+tests/*.ok
+tests/*.fail

@@ -6,9 +6,10 @@ This plugin provides a seamless integration, allowing you to update Verilog `/* 
 
 ## Features
 
--   **On-demand Loading**: Verilog commands and mappings are installed only for buffers with `filetype=verilog`.
+-   **On-demand Loading**: Verilog commands and mappings are installed only for buffers with `filetype=verilog` or `filetype=systemverilog`.
 -   **Asynchronous by Default**: On modern Vim (with `+job`), Emacs runs in the background, so your UI stays responsive, even with large files.
 -   **Synchronous Fallback**: Compatible with older Vim versions (like Vim 7) by automatically switching to a blocking mode.
+-   **Verilog/SystemVerilog Runtime Support**: Includes built-in syntax highlighting and fast indentation scripts that follow your buffer-local Vim indentation settings.
 -   **Simple and Flexible**: Comes with intuitive default key mappings (`ta`, `td`) and Ex commands.
 -   **Highly Configurable**: Easily customize key mappings, Emacs executable path, and even load your own custom Emacs Lisp configuration files for project-specific settings.
 -   **Robust Error Handling**: Provides clear feedback if Emacs fails or if configurations are missing.
@@ -24,7 +25,7 @@ Plug 'Wenutu/vim-verilog-mode'
 For vim-plug filetype lazy loading:
 
 ```vim
-Plug 'Wenutu/vim-verilog-mode', { 'for': 'verilog' }
+Plug 'Wenutu/vim-verilog-mode', { 'for': ['verilog', 'systemverilog'] }
 ```
 
 ## Prerequisites
@@ -33,7 +34,15 @@ You must have **Emacs** installed and accessible in your system's `PATH`. The pl
 
 ## Usage
 
-The plugin provides two primary modes of operation, available only in Verilog files (`filetype=verilog`).
+The plugin provides two primary modes of operation, available only in Verilog and SystemVerilog files (`filetype=verilog` or `filetype=systemverilog`).
+
+The ftplugin does not override your tab or indentation options. The bundled
+indent scripts use `shiftwidth()`, so set your preferred spacing in your Vim
+configuration. For 4-space, no-tab Verilog editing:
+
+```vim
+autocmd FileType verilog,systemverilog setlocal expandtab tabstop=4 shiftwidth=4 softtabstop=4
+```
 
 ### Default Mode
 
@@ -121,6 +130,35 @@ For more details, see the built-in documentation with `:help verilog-mode`.
 5.  The temporary file is deleted.
 
 The asynchronous job control in modern Vim ensures that steps 2-4 happen in the background without interrupting your workflow.
+
+## Testing
+
+Run the built-in runtime smoke tests from the repository root:
+
+```sh
+vim -Nu NONE -i NONE -n -es -S tests/vimscript/verilog_runtime_smoke.vim
+vim -Nu NONE -i NONE -n -es -S tests/vimscript/systemverilog_runtime_smoke.vim
+```
+
+The tests open the complex Verilog and SystemVerilog fixtures with this plugin
+on `runtimepath`, then verify filetype detection, syntax groups, indentation
+results, and the buffer-local AUTO command mappings.
+
+To inspect the fixtures manually:
+
+```sh
+vim -Nu NONE -i NONE \
+  --cmd 'set runtimepath^=/path/to/vim-verilog-mode' \
+  --cmd 'syntax on' \
+  --cmd 'filetype plugin indent on' \
+  tests/fixtures/complex_verilog.v
+
+vim -Nu NONE -i NONE \
+  --cmd 'set runtimepath^=/path/to/vim-verilog-mode' \
+  --cmd 'syntax on' \
+  --cmd 'filetype plugin indent on' \
+  tests/fixtures/complex_systemverilog.sv
+```
 
 ## License
 
